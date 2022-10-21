@@ -11,3 +11,8 @@ The graph is automatically updated from the folder on the server. All you have t
 ## Table in markdown
 On the machine learning notes,
 to be able to track configuration changes use the markdown template then save file on the server and the table is automatically updated.
+
+## Annif Metric Creation
+in annif command line 
+annif eval bldg-omikuji-parabel-en --metrics-file data-sets/bldg-regs/docs/validate/2021-10.1-bldg-omikuji-parabel-en.json data-sets/bldg-regs/docs/validate/validate.tsv 
+annif eval command https://annif.readthedocs.io/en/stable/source/commands.html#annif-eval
