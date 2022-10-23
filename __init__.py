@@ -152,21 +152,21 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
     ddTraining = notes["training"].unique()
 
     if not (ddv_models == None or ddv_models == []):
-        query.append("`ml model` == @ddv_models")
+        query.append(f"`ml model` == {ddv_models}")
 
     if not (ddv_sources == None or ddv_sources == []):
-        query.append("sources == @ddv_sources")
+        query.append(f"sources == {ddv_sources}")
 
     if not (ddv_vocab == None or ddv_vocab == []):
-        query.append("vocab == @ddv_vocab")
+        query.append(f"vocab == {ddv_vocab}")
 
     if not (ddv_training == None or ddv_training == []):
-        query.append("training == @ddv_training")
+        query.append(f"training == {ddv_training}")
 
     if query != []:
         query = " and ".join(query)
         notes = notes.query(query)
-        df = df.query('Title == @notes["titles"].values.tolist()')
+        df = df.query(f'Title == {notes["titles"].values.tolist()}')
     else:
         notes = notes
 
