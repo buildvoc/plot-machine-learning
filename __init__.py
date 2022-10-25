@@ -4,8 +4,10 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
+
 from glob import glob
 import json
+
 from os.path import getmtime
 from os.path import basename
 
@@ -14,8 +16,8 @@ inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-b
 notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
 
 # testing
-# inputFolder = "data-sets/*.json"
-# notesFile = "data-sets/MachineLearning.md"
+inputFolder = "data-sets/*.json"
+notesFile = "data-sets/MachineLearning.md"
 
 seconds = 30  # change to 60 for a minute
 
@@ -74,6 +76,7 @@ def parseNotes():
         "date": [],
         "sources": [],
         "vocab": [],
+        "vocab notes": [],
         "training": [],
         "incremental learning": [],
         "comments": [],
@@ -84,7 +87,7 @@ def parseNotes():
 
     data = [x.replace("\n", "") for x in data]
     titles = [x.replace("## ", "") for x in data if "##" in x]
-    text = [data[data.index(x) + 1 : data.index(x) + 1 + 7] for x in data if "##" in x]
+    text = [data[data.index(x) + 1 : data.index(x) + 1 + 8] for x in data if "##" in x]
 
     for note in text:
         for j in note:
