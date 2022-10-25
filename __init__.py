@@ -19,7 +19,7 @@ notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-
 # inputFolder = "data-sets/*.json"
 # notesFile = "data-sets/MachineLearning.md"
 
-seconds = 30  # change to 60 for a minute
+seconds = 5  # change to 60 for a minute
 
 
 def cleanTitles():
@@ -105,38 +105,62 @@ def parseNotes():
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     [
-        html.H2(
+        html.H4(
             "Building Regulation Guidance (Machine Learning (ML) Natural language processing (NLP) automated subject indexing"
         ),
-        html.Label("ML Model"),
-        dcc.Dropdown(
-            id="dropdown_model", 
-            multi=True, 
-            persistence=True, 
-            persistence_type="local"
+        html.Div(
+            [
+                html.Label("ML Model", style=dict(width="10%")),
+                dcc.Dropdown(
+                    id="dropdown_model",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local",
+                    style=dict(width="90%"),
+                ),
+            ],
+            style=dict(display="flex"),
         ),
-        html.Label("Sources"),
-        dcc.Dropdown(
-            id="dropdown_sources",
-            multi=True,
-            persistence=True,
-            persistence_type="local",
+        html.Div(
+            [
+                html.Label("Sources", style=dict(width="10%")),
+                dcc.Dropdown(
+                    id="dropdown_sources",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local",
+                    style=dict(width="90%"),
+                ),
+            ],
+            style=dict(display="flex"),
         ),
-        html.Label("Vocab"),
-        dcc.Dropdown(
-            id="dropdown_vocab", 
-            multi=True, 
-            persistence=True, 
-            persistence_type="local"
+        html.Div(
+            [
+                html.Label("Vocab", style=dict(width="10%")),
+                dcc.Dropdown(
+                    id="dropdown_vocab",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local",
+                    style=dict(width="90%"),
+                ),
+            ],
+            style=dict(display="flex"),
         ),
-        html.Label("Training"),
-        dcc.Dropdown(
-            id="dropdown_training",
-            multi=True,
-            persistence=True,
-            persistence_type="local",
+        html.Div(
+            [
+                html.Label("Training", style=dict(width="10%")),
+                dcc.Dropdown(
+                    id="dropdown_training",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local",
+                    style=dict(width="90%"),
+                ),
+            ],
+            style=dict(display="flex"),
         ),
-        html.H4(id="graphError"),
+        html.H5(id="graphError"),
         dcc.Graph(id="ml", animate=False),  # ml graph
         html.Div(id="table"),  # notes table
         dcc.Interval(id="update", interval=seconds * 1000),
