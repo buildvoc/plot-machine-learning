@@ -50,6 +50,6 @@ Date =2022 Oct
 Sources =bldg-omikuji-parabel-en
 Vocab =bldg-en
 Vocab Notes = update additional broader in vocbench
-Training = export-vocbench-data-dictionary-resource-202210
+Training = 2022-10.1-building-regulation-guidance-baseline
 Incremental learning =No
 Comments = comments here

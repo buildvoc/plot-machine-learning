@@ -158,6 +158,7 @@ app.layout = html.Div(
                     persistence=True,
                     persistence_type="local",
                     style=dict(width="80%"),
+                    optionHeight=50,
                 ),
             ],
             style=dict(display="flex"),
