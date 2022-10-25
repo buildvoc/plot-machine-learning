@@ -112,7 +112,7 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                html.Label("ML Model", style=dict(width="10%")),
+                html.Label(html.Strong("ML Model"), style=dict(width="10%")),
                 dcc.Dropdown(
                     id="dropdown_model",
                     multi=True,
@@ -125,7 +125,7 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                html.Label("Sources", style=dict(width="10%")),
+                html.Label(html.Strong("Sources"), style=dict(width="10%")),
                 dcc.Dropdown(
                     id="dropdown_sources",
                     multi=True,
@@ -138,7 +138,7 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                html.Label("Vocab", style=dict(width="10%")),
+                html.Label(html.Strong("Vocab"), style=dict(width="10%")),
                 dcc.Dropdown(
                     id="dropdown_vocab",
                     multi=True,
@@ -151,7 +151,7 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                html.Label("Training", style=dict(width="10%")),
+                html.Label(html.Strong("Training"), style=dict(width="10%")),
                 dcc.Dropdown(
                     id="dropdown_training",
                     multi=True,
