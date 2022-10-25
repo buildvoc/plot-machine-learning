@@ -16,8 +16,8 @@ inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-b
 notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
 
 # testing
-# inputFolder = "data-sets/*.json"
-# notesFile = "data-sets/MachineLearning.md"
+inputFolder = "data-sets/*.json"
+notesFile = "data-sets/MachineLearning.md"
 
 seconds = 5  # change to 60 for a minute
 
@@ -105,8 +105,10 @@ def parseNotes():
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     [
-        html.H4(
-            "Building Regulation Guidance (Machine Learning (ML) Natural language processing (NLP) automated subject indexing"
+        html.Label(
+            html.Strong(
+                "Building Regulation Guidance (Machine Learning (ML) Natural language processing (NLP) automated subject indexing"
+            )
         ),
         html.Div(
             [
@@ -160,7 +162,7 @@ app.layout = html.Div(
             ],
             style=dict(display="flex"),
         ),
-        html.H5(id="graphError"),
+        html.Strong(html.Label(id="graphError")),
         dcc.Graph(id="ml", animate=False),  # ml graph
         html.Div(id="table"),  # notes table
         dcc.Interval(id="update", interval=seconds * 1000),
