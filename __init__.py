@@ -75,9 +75,11 @@ def parseNotes():
         "ml model": [],
         "date": [],
         "sources": [],
+        "backend": [],
         "vocab": [],
         "vocab notes": [],
         "training": [],
+        "training notes": [],
         "incremental learning": [],
         "comments": [],
     }
@@ -87,7 +89,7 @@ def parseNotes():
 
     data = [x.replace("\n", "") for x in data]
     titles = [x.replace("## ", "") for x in data if "##" in x]
-    text = [data[data.index(x) + 1 : data.index(x) + 1 + 8] for x in data if "##" in x]
+    text = [data[data.index(x) + 1 : data.index(x) + 1 + 10] for x in data if "##" in x]
 
     for note in text:
         for j in note:
@@ -205,6 +207,7 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
     ddVocab = notes["vocab"].unique()
     ddTraining = notes["training"].unique()
 
+    # not is used outside the brackets to prevent a bug.
     if not (ddv_models == None or ddv_models == []):
         query.append(f"`ml model` == {ddv_models}")
 
