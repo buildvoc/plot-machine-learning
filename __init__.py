@@ -268,7 +268,8 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
             tickmode="array",
             tickvals=df["Index"],
             ticktext=df["Title"],
-        )
+        ),
+        uirevision="False",
     )
 
     # Error
