@@ -1,9 +1,10 @@
 import dash
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
+import dash_cytoscape as cyto
 
 from glob import glob
 import json
@@ -16,10 +17,24 @@ inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-b
 notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
 
 # testing
-# inputFolder = "data-sets/*.json"
-# notesFile = "data-sets/MachineLearning.md"
+inputFolder = "data-sets/*.json"
+notesFile = "data-sets/MachineLearning.md"
 
 seconds = 5  # change to 60 for a minute
+
+cyto_stylesheet = [
+    {
+        "selector": "node",
+        "style": {
+            "width": "mapData(size, 0, 1, 100, 1000)",
+            "height": "mapData(size, 0, 1, 100, 1000)",
+            "content": "data(label)",
+            "font-size": "12px",
+            "text-valign": "center",
+            "text-halign": "center",
+        },
+    }
+]
 
 
 def cleanTitles():
@@ -107,84 +122,113 @@ def parseNotes():
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     [
-        html.Label(
-            html.Strong(
-                "Building Regulation Guidance (Machine Learning (ML) Natural language processing (NLP) automated subject indexing"
-            )
-        ),
-        html.Div(
+        dcc.Tabs(
             [
-                html.Label(html.Strong("ML Model"), style=dict(width="20%")),
-                dcc.Dropdown(
-                    id="dropdown_model",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local",
-                    style=dict(width="80%"),
+                dcc.Tab(
+                    label="Line Graph",
+                    children=[
+                        html.Label(
+                            html.Strong(
+                                "Building Regulation Guidance (Machine Learning (ML) Natural language processing (NLP) automated subject indexing"
+                            )
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("ML Model"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_model",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Analyzer"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_analyzer",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Sources"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_sources",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Vocab"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_vocab",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Training"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_training",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                    optionHeight=50,
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Strong(html.Label(id="graphError")),
+                        dcc.Graph(id="ml", animate=False),  # ml graph
+                        html.Div(id="table"),  # notes table
+                        dcc.Interval(id="update-line", interval=seconds * 1000),
+                    ],
                 ),
-            ],
-            style=dict(display="flex"),
-        ),
-        html.Div(
-            [
-                html.Label(html.Strong("Analyzer"), style=dict(width="20%")),
-                dcc.Dropdown(
-                    id="dropdown_analyzer",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local",
-                    style=dict(width="80%"),
+                dcc.Tab(
+                    label="Network Graph",
+                    children=[
+                        cyto.Cytoscape(
+                            id="network graph",
+                            layout={"name": "cose"},
+                            stylesheet=cyto_stylesheet,
+                        ),
+                        dcc.Interval(id="update-network", interval=seconds * 1000),
+                    ],
                 ),
-            ],
-            style=dict(display="flex"),
-        ),
-        html.Div(
-            [
-                html.Label(html.Strong("Sources"), style=dict(width="20%")),
-                dcc.Dropdown(
-                    id="dropdown_sources",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local",
-                    style=dict(width="80%"),
-                ),
-            ],
-            style=dict(display="flex"),
-        ),
-        html.Div(
-            [
-                html.Label(html.Strong("Vocab"), style=dict(width="20%")),
-                dcc.Dropdown(
-                    id="dropdown_vocab",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local",
-                    style=dict(width="80%"),
-                ),
-            ],
-            style=dict(display="flex"),
-        ),
-        html.Div(
-            [
-                html.Label(html.Strong("Training"), style=dict(width="20%")),
-                dcc.Dropdown(
-                    id="dropdown_training",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local",
-                    style=dict(width="80%"),
-                    optionHeight=50,
-                ),
-            ],
-            style=dict(display="flex"),
-        ),
-        html.Strong(html.Label(id="graphError")),
-        dcc.Graph(id="ml", animate=False),  # ml graph
-        html.Div(id="table"),  # notes table
-        dcc.Interval(id="update", interval=seconds * 1000),
+            ]
+        )
     ]
 )
-
 
 # updater for ML Graph
 
@@ -201,7 +245,7 @@ app.layout = html.Div(
         Output("graphError", "children"),
     ],
     [
-        Input("update", "n_intervals"),
+        Input("update-line", "n_intervals"),
         Input("dropdown_model", "value"),
         Input("dropdown_sources", "value"),
         Input("dropdown_vocab", "value"),
@@ -209,8 +253,13 @@ app.layout = html.Div(
         Input("dropdown_analyzer", "value"),
     ],
 )
-def updateAll(
-    n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training, ddv_analyzer
+def updateLine(
+    n_intervals,
+    ddv_models,
+    ddv_sources,
+    ddv_vocab,
+    ddv_training,
+    ddv_analyzer,
 ):
 
     df = parsejson()
@@ -239,7 +288,7 @@ def updateAll(
         query.append(f"training == {ddv_training}")
 
     if not (ddv_analyzer == None or ddv_analyzer == []):
-        query.append(f"training == {ddv_analyzer}")
+        query.append(f"analyzer == {ddv_analyzer}")
 
     if query != []:
         query = " and ".join(query)
@@ -312,6 +361,51 @@ def updateAll(
         ddAnalyzer,
         errorMSG,
     )
+
+
+@app.callback(
+    Output("network graph", "elements"), Input("update-network", "n_intervals")
+)
+def updateNetwork(n_intervals):
+    df = parsejson()
+    notes = parseNotes()
+    metrics = ["ml model", "sources", "analyzer", "vocab", "training"]
+
+    elements = (
+        [
+            # Nodes elements
+            {
+                "data": {
+                    "id": f"{m}-{row['titles']}",
+                    "label": f"{row[m][0:10]}...",
+                }
+            }
+            for m in metrics
+            for index, row in notes.iterrows()
+        ]
+        + [
+            {
+                "data": {
+                    "id": f"F1-{row['titles']}",
+                    "label": f"F1 Score",
+                    "size": df["F1_score_doc_avg"][index],
+                },
+                "classes": "F1",
+            }
+            for index, row in notes.iterrows()
+        ]
+        + [
+            {
+                "data": {
+                    "source": f"{m}-{row['titles']}",
+                    "target": f"F1-{row['titles']}",
+                }
+            }
+            for m in metrics
+            for index, row in notes.iterrows()
+        ]
+    )
+    return elements
 
 
 server = app.server
