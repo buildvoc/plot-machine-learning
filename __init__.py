@@ -22,6 +22,8 @@ notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-
 
 seconds = 5  # change to 60 for a minute
 
+cyto.load_extra_layouts()
+
 cyto_stylesheet = [
     {
         "selector": "node",
@@ -246,7 +248,7 @@ app.layout = html.Div(
                                             style=styles["cytoscape"],
                                             stylesheet=cyto_stylesheet,
                                             layout={
-                                                "name": "cose",
+                                                "name": "cose-bilkent",
                                                 "animate": False,
                                                 "fit": False,
                                             },
@@ -421,10 +423,9 @@ def updateNetwork(n_intervals):
             {
                 "data": {
                     "id": f"F1-{row['titles']}",
-                    "label": f"F1 Score",
+                    "label": row["titles"],
                     "size": df["F1_score_doc_avg"][index],
                 },
-                "classes": "F1",
             }
             for index, row in notes.iterrows()
         ]
