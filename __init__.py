@@ -75,7 +75,7 @@ def parseNotes():
         "ml model": [],
         "date": [],
         "sources": [],
-        "backend": [],
+        "analyzer": [],
         "vocab": [],
         "vocab notes": [],
         "training": [],
@@ -117,6 +117,19 @@ app.layout = html.Div(
                 html.Label(html.Strong("ML Model"), style=dict(width="20%")),
                 dcc.Dropdown(
                     id="dropdown_model",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local",
+                    style=dict(width="80%"),
+                ),
+            ],
+            style=dict(display="flex"),
+        ),
+        html.Div(
+            [
+                html.Label(html.Strong("Analyzer"), style=dict(width="20%")),
+                dcc.Dropdown(
+                    id="dropdown_analyzer",
                     multi=True,
                     persistence=True,
                     persistence_type="local",
@@ -184,6 +197,7 @@ app.layout = html.Div(
         Output("dropdown_sources", "options"),
         Output("dropdown_vocab", "options"),
         Output("dropdown_training", "options"),
+        Output("dropdown_analyzer", "options"),
         Output("graphError", "children"),
     ],
     [
@@ -192,9 +206,12 @@ app.layout = html.Div(
         Input("dropdown_sources", "value"),
         Input("dropdown_vocab", "value"),
         Input("dropdown_training", "value"),
+        Input("dropdown_analyzer", "value"),
     ],
 )
-def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
+def updateAll(
+    n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training, ddv_analyzer
+):
 
     df = parsejson()
 
@@ -206,6 +223,7 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
     ddSources = notes["sources"].unique()
     ddVocab = notes["vocab"].unique()
     ddTraining = notes["training"].unique()
+    ddAnalyzer = notes["analyzer"].unique()
 
     # not is used outside the brackets to prevent a bug.
     if not (ddv_models == None or ddv_models == []):
@@ -219,6 +237,9 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
 
     if not (ddv_training == None or ddv_training == []):
         query.append(f"training == {ddv_training}")
+
+    if not (ddv_analyzer == None or ddv_analyzer == []):
+        query.append(f"training == {ddv_analyzer}")
 
     if query != []:
         query = " and ".join(query)
@@ -281,7 +302,16 @@ def updateAll(n_intervals, ddv_models, ddv_sources, ddv_vocab, ddv_training):
     # table
     tbl = dbc.Table.from_dataframe(notes, bordered=True, responsive=True, striped=True)
 
-    return (fig, tbl, ddModels, ddSources, ddVocab, ddTraining, errorMSG)
+    return (
+        fig,
+        tbl,
+        ddModels,
+        ddSources,
+        ddVocab,
+        ddTraining,
+        ddAnalyzer,
+        errorMSG,
+    )
 
 
 server = app.server
