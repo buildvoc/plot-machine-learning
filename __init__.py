@@ -247,6 +247,7 @@ app.layout = html.Div(
                                             stylesheet=cyto_stylesheet,
                                             layout={
                                                 "name": "cose",
+                                                "animate": False,
                                             },
                                             responsive=True,
                                         )
