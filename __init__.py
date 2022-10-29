@@ -36,6 +36,23 @@ cyto_stylesheet = [
     }
 ]
 
+styles = {
+    "container": {
+        "position": "fixed",
+        "display": "flex",
+        "flex-direction": "column",
+        "height": "100%",
+        "width": "100%",
+    },
+    "cy-container": {"flex": "1", "position": "relative"},
+    "cytoscape": {
+        "position": "absolute",
+        "width": "100%",
+        "height": "100%",
+        "z-index": 999,
+    },
+}
+
 
 def cleanTitles():
     # remove unnececary data from path
@@ -217,10 +234,25 @@ app.layout = html.Div(
                 dcc.Tab(
                     label="Network Graph",
                     children=[
-                        cyto.Cytoscape(
-                            id="network graph",
-                            layout={"name": "cose"},
-                            stylesheet=cyto_stylesheet,
+                        html.Div(
+                            style=styles["container"],
+                            children=[
+                                html.Div(
+                                    className="cy-container",
+                                    style=styles["cy-container"],
+                                    children=[
+                                        cyto.Cytoscape(
+                                            id="network graph",
+                                            style=styles["cytoscape"],
+                                            stylesheet=cyto_stylesheet,
+                                            layout={
+                                                "name": "cose",
+                                            },
+                                            responsive=True,
+                                        )
+                                    ],
+                                ),
+                            ],
                         ),
                         dcc.Interval(id="update-network", interval=seconds * 1000),
                     ],
@@ -411,4 +443,4 @@ def updateNetwork(n_intervals):
 server = app.server
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)
