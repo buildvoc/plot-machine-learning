@@ -248,6 +248,7 @@ app.layout = html.Div(
                                             layout={
                                                 "name": "cose",
                                                 "animate": False,
+                                                "fit": False,
                                             },
                                             responsive=True,
                                         )
