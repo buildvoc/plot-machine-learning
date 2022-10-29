@@ -26,8 +26,8 @@ cyto_stylesheet = [
     {
         "selector": "node",
         "style": {
-            "width": "mapData(size, 0, 1, 100, 1000)",
-            "height": "mapData(size, 0, 1, 100, 1000)",
+            "width": "mapData(size, 0, 1, 20, 100)",
+            "height": "mapData(size, 0, 1, 20, 100)",
             "content": "data(label)",
             "font-size": "12px",
             "text-valign": "center",
