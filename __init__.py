@@ -138,6 +138,47 @@ def parseNotes():
     return df
 
 
+def updateNetwork():
+    df = parsejson()
+    notes = parseNotes()
+    metrics = ["ml model", "sources", "analyzer", "vocab", "training"]
+
+    elements = (
+        [
+            # Nodes elements
+            {
+                "data": {
+                    "id": f"{m}-{row['titles']}",
+                    "label": f"{row[m][0:10]}...",
+                }
+            }
+            for m in metrics
+            for index, row in notes.iterrows()
+        ]
+        + [
+            {
+                "data": {
+                    "id": f"F1-{row['titles']}",
+                    "label": row["titles"],
+                    "size": df["F1_score_doc_avg"][index],
+                },
+            }
+            for index, row in notes.iterrows()
+        ]
+        + [
+            {
+                "data": {
+                    "source": f"{m}-{row['titles']}",
+                    "target": f"F1-{row['titles']}",
+                }
+            }
+            for m in metrics
+            for index, row in notes.iterrows()
+        ]
+    )
+    return elements
+
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
     [
@@ -246,6 +287,7 @@ app.layout = html.Div(
                                         cyto.Cytoscape(
                                             id="network graph",
                                             style=styles["cytoscape"],
+                                            elements=updateNetwork(),
                                             stylesheet=cyto_stylesheet,
                                             layout={
                                                 "name": "cose-bilkent",
@@ -258,7 +300,6 @@ app.layout = html.Div(
                                 ),
                             ],
                         ),
-                        dcc.Interval(id="update-network", interval=seconds * 1000),
                     ],
                 ),
             ]
@@ -397,50 +438,6 @@ def updateLine(
         ddAnalyzer,
         errorMSG,
     )
-
-
-@app.callback(
-    Output("network graph", "elements"), Input("update-network", "n_intervals")
-)
-def updateNetwork(n_intervals):
-    df = parsejson()
-    notes = parseNotes()
-    metrics = ["ml model", "sources", "analyzer", "vocab", "training"]
-
-    elements = (
-        [
-            # Nodes elements
-            {
-                "data": {
-                    "id": f"{m}-{row['titles']}",
-                    "label": f"{row[m][0:10]}...",
-                }
-            }
-            for m in metrics
-            for index, row in notes.iterrows()
-        ]
-        + [
-            {
-                "data": {
-                    "id": f"F1-{row['titles']}",
-                    "label": row["titles"],
-                    "size": df["F1_score_doc_avg"][index],
-                },
-            }
-            for index, row in notes.iterrows()
-        ]
-        + [
-            {
-                "data": {
-                    "source": f"{m}-{row['titles']}",
-                    "target": f"F1-{row['titles']}",
-                }
-            }
-            for m in metrics
-            for index, row in notes.iterrows()
-        ]
-    )
-    return elements
 
 
 server = app.server
