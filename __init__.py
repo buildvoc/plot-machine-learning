@@ -302,6 +302,7 @@ app.layout = html.Div(
                         ),
                     ],
                 ),
+                dcc.Tab(label="Network Graph Eprints", children=[]),
             ]
         )
     ]
