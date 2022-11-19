@@ -16,10 +16,6 @@ from os.path import basename
 inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/*.json"
 notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
 
-inputFolder_2 = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/eprint*.json"
-noteFolder_2 = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/eprint*.txt"
-
-
 # testing
 # inputFolder = "data-sets/*.json"
 # notesFile = "data-sets/MachineLearning.md"
@@ -181,81 +177,6 @@ def updateNetwork():
         ]
     )
     return elements
-
-##############--------- Network Graph Eprint Tab-----------#######################
-
-def getjson_2():
-    # get json files and sort by creation date
-    jsonData = glob(inputFolder_2)
-    jsonData.sort(key=getmtime)
-    return jsonData
-
-def getnotes_2():
-    # get note files and sort by creation date
-    noteData = glob(noteFolder_2)
-    noteData.sort(key=getmtime)
-    return noteData
-
-
-def parsejson_2():
-    jsonData= getjson_2()
-    jsonTemp = {"FileID":[],
-        "Label":[],
-        "Score":[],
-       }
-    for file in jsonData:
-        with open(file, "r") as f:
-            data = json.load(f)
-            data=data['results'][0]
-            jsonTemp["Label"].append(data['label'])
-            jsonTemp["Score"].append(data['score'])
-            jsonTemp["FileID"].append(file.split("\\")[-1].split(".")[0])
-    
-    df = pd.DataFrame(jsonTemp)
-    return df
-
-def parsenotes_2():
-    noteData = getnotes_2()
-    notesTemp1 = {"FileID":[],
-        "Title":[],
-       "Author":[],
-       }
-
-    notesTemp2 = {"FileID":[],
-       "Subject":[]
-       }
-    textdict={}
-    for file in noteData:
-        with open(file, "r") as f:
-            TextData = f.readlines()
-        for text in TextData:
-            items=text.split(":")
-            if len(items)==2:
-                textdict[items[0]]=items[1].strip()
-        notesTemp1['Title'].append(textdict['title'])
-        notesTemp1['Author'].append(textdict['creators_name'])
-        notesTemp1["FileID"].append(file.split("\\")[-1].split(".")[0])
-        
-    for file in noteData:
-        with open(file, "r") as f:
-            TextData = f.readlines()
-        for text in TextData:
-            items=text.split(":")
-            if len(items)==2 and "subjects" in items:
-                notesTemp2['Subject'].append(items[1].strip())
-                notesTemp2["FileID"].append(file.split("\\")[-1].split(".")[0])
-    
-    
-    df1 = pd.DataFrame(notesTemp1)
-    df2 = pd.DataFrame(notesTemp2)
-    return df1 , df2
-#New DataFrames from the json and text files
-jsonFrame = parsejson_2()
-noteFrame_1,noteFrame_2=parsenotes_2()
-
-#join DataFrame
-
-MainDataFrame = noteFrame_2.merge(jsonFrame.merge(noteFrame_1,on='FileID'),on='FileID')
 
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
