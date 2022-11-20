@@ -434,6 +434,9 @@ def updateNetwork(
     else:
         notes = notes
 
+    for index, row in notes.iterrows():
+      print(df.loc[df["Title"] == row['titles']]['F1_score_doc_avg'])
+
     elements = (
         [
             # Nodes elements
@@ -445,14 +448,13 @@ def updateNetwork(
                 }
             }
             for m in metrics
-            for index, row in notes.iterrows()  if row[m] != "N/A"
+            for index, row in notes.iterrows() if row[m] != "N/A"
         ]
-        + [
-            {
+        + [            {
                 "data": {
                     "id": f"F1-{row['titles']}",
                     "label": row["titles"],
-                    "size": df["F1_score_doc_avg"][index],
+                    "size": df.loc[df["Title"] == row['titles']]['F1_score_doc_avg'].values[0] if len(df.loc[df["Title"] == row['titles']]) != 0 else 0,
                 },
                 "classes": 'red'
             }
@@ -613,4 +615,4 @@ def updateLine(
 server = app.server
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True, port= 8051)
