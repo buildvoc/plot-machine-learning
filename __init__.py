@@ -13,12 +13,12 @@ from os.path import getmtime
 from os.path import basename
 
 # production
-inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/*.json"
-notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
+#inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/*.json"
+#notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
 
 # testing
-# inputFolder = "data-sets/*.json"
-# notesFile = "data-sets/MachineLearning.md"
+inputFolder = "data-sets/*.json"
+notesFile = "data-sets/MachineLearning.md"
 
 seconds = 5  # change to 60 for a minute
 
@@ -28,14 +28,47 @@ cyto_stylesheet = [
     {
         "selector": "node",
         "style": {
-            "width": "mapData(size, 0, 1, 20, 100)",
-            "height": "mapData(size, 0, 1, 20, 100)",
+            "width": "mapData(size, 0, 1, 10, 100)",
+            "height": "mapData(size, 0, 1, 10, 100)",
             "content": "data(label)",
-            "font-size": "12px",
+            "font-size": "5px",
             "text-valign": "center",
             "text-halign": "center",
+            'background-color': '#00BFFF'
+        }
+    },
+    {
+        "selector": "edge",
+        "style": {
+            "width": "1",
+            'line-color': '#00BFFF'
         },
-    }
+    },
+    {
+        'selector': '.red',
+        'style': {
+            'background-color': 'red',
+            'line-color': 'red'
+        }
+    },
+    {
+        'selector': ".sources",
+        'style': {
+            'line-color': 'orange'
+        }
+    },
+    {
+        'selector': ".training",
+        'style': {
+            'line-color': 'purple'
+        }
+    },
+    {
+        'selector': ".vocab",
+        'style': {
+            'line-color': 'green'
+        }
+    },
 ]
 
 styles = {
@@ -130,7 +163,7 @@ def parseNotes():
             j = j.split("=")
             j = [x.strip() for x in j]
 
-            template[j[0].lower()].append(j[1])
+            template[j[0].lower()].append(j[1] if j[1] else "N/A")
 
     template["titles"] = titles
 
@@ -148,8 +181,9 @@ def updateNetwork():
             # Nodes elements
             {
                 "data": {
-                    "id": f"{m}-{row['titles']}",
-                    "label": f"{row[m][0:10]}...",
+                    "id": f"{row[m]}",
+                    "label": f"{row[m]}",
+                    "size": 0,   
                 }
             }
             for m in metrics
@@ -162,20 +196,23 @@ def updateNetwork():
                     "label": row["titles"],
                     "size": df["F1_score_doc_avg"][index],
                 },
+                "classes": 'red'
             }
             for index, row in notes.iterrows()
         ]
         + [
             {
                 "data": {
-                    "source": f"{m}-{row['titles']}",
+                    "source": f"{row[m]}",
                     "target": f"F1-{row['titles']}",
-                }
+                },
+                "classes": m
             }
             for m in metrics
-            for index, row in notes.iterrows()
+            for index, row in notes.iterrows() if row[m] != "N/A"
         ]
     )
+
     return elements
 
 
@@ -290,9 +327,9 @@ app.layout = html.Div(
                                             elements=updateNetwork(),
                                             stylesheet=cyto_stylesheet,
                                             layout={
-                                                "name": "cose-bilkent",
+                                                "name": "cose",
                                                 "animate": False,
-                                                "fit": False,
+                                                "fit": True,
                                             },
                                             responsive=True,
                                         )
