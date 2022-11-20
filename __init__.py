@@ -134,7 +134,6 @@ def parsejson():
     df = pd.DataFrame(template)
     return df
 
-
 def parseNotes():
 
     template = {
@@ -169,52 +168,6 @@ def parseNotes():
 
     df = pd.DataFrame(template)
     return df
-
-
-def updateNetwork():
-    df = parsejson()
-    notes = parseNotes()
-    metrics = ["ml model", "sources", "analyzer", "vocab", "training"]
-
-    elements = (
-        [
-            # Nodes elements
-            {
-                "data": {
-                    "id": f"{row[m]}",
-                    "label": f"{row[m]}",
-                    "size": 0,   
-                }
-            }
-            for m in metrics
-            for index, row in notes.iterrows()
-        ]
-        + [
-            {
-                "data": {
-                    "id": f"F1-{row['titles']}",
-                    "label": row["titles"],
-                    "size": df["F1_score_doc_avg"][index],
-                },
-                "classes": 'red'
-            }
-            for index, row in notes.iterrows()
-        ]
-        + [
-            {
-                "data": {
-                    "source": f"{row[m]}",
-                    "target": f"F1-{row['titles']}",
-                },
-                "classes": m
-            }
-            for m in metrics
-            for index, row in notes.iterrows() if row[m] != "N/A"
-        ]
-    )
-
-    return elements
-
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div(
@@ -315,28 +268,104 @@ app.layout = html.Div(
                     label="Network Graph",
                     children=[
                         html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("ML Model"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_model1",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Analyzer"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_analyzer1",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Sources"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_sources1",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Vocab"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_vocab1",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
+                            [
+                                html.Label(
+                                    html.Strong("Training"), style=dict(width="20%")
+                                ),
+                                dcc.Dropdown(
+                                    id="dropdown_training1",
+                                    multi=True,
+                                    persistence=True,
+                                    persistence_type="local",
+                                    style=dict(width="80%"),
+                                    optionHeight=50,
+                                ),
+                            ],
+                            style=dict(display="flex"),
+                        ),
+                        html.Div(
                             style=styles["container"],
                             children=[
                                 html.Div(
+                                    id='network graph',
                                     className="cy-container",
                                     style=styles["cy-container"],
                                     children=[
-                                        cyto.Cytoscape(
-                                            id="network graph",
-                                            style=styles["cytoscape"],
-                                            elements=updateNetwork(),
-                                            stylesheet=cyto_stylesheet,
-                                            layout={
-                                                "name": "cose",
-                                                "animate": False,
-                                                "fit": True,
-                                            },
-                                            responsive=True,
-                                        )
-                                    ],
+                                      cyto.Cytoscape(
+                                        id="network-graph",
+                                        style=styles["cytoscape"],
+                                        stylesheet=cyto_stylesheet,
+                                        layout={
+                                            "name": "cose",
+                                            "animate": False,
+                                            "fit": True,
+                                        },
+                                        responsive=True,
+                                      )
+                                    ]
                                 ),
                             ],
-                        ),
+                        )
                     ],
                 ),
                 dcc.Tab(label="Network Graph Eprints", children=[]),
@@ -347,6 +376,109 @@ app.layout = html.Div(
 
 # updater for ML Graph
 
+@app.callback(
+    [ Output('network-graph', 'elements'),
+      Output("dropdown_model1", "options"),
+        Output("dropdown_sources1", "options"),
+        Output("dropdown_vocab1", "options"),
+        Output("dropdown_training1", "options"),
+        Output("dropdown_analyzer1", "options")
+    ],
+    [
+        Input("dropdown_model1", "value"),
+        Input("dropdown_sources1", "value"),
+        Input("dropdown_vocab1", "value"),
+        Input("dropdown_training1", "value"),
+        Input("dropdown_analyzer1", "value"),
+    ]
+)
+def updateNetwork(
+    ddv_models,
+    ddv_sources,
+    ddv_vocab,
+    ddv_training,
+    ddv_analyzer
+):
+    df = parsejson()
+    notes = parseNotes()
+    metrics = ["ml model", "sources", "analyzer", "vocab", "training"]
+    query = []
+
+    # dropdowns
+    ddModels = notes["ml model"].unique()
+    ddSources = notes["sources"].unique()
+    ddVocab = notes["vocab"].unique()
+    ddTraining = notes["training"].unique()
+    ddAnalyzer = notes["analyzer"].unique()
+    
+    # not is used outside the brackets to prevent a bug.
+    if not (ddv_models == None or ddv_models == []):
+        query.append(f"`ml model` == {ddv_models}")
+
+    if not (ddv_sources == None or ddv_sources == []):
+        query.append(f"sources == {ddv_sources}")
+
+    if not (ddv_vocab == None or ddv_vocab == []):
+        query.append(f"vocab == {ddv_vocab}")
+
+    if not (ddv_training == None or ddv_training == []):
+        query.append(f"training == {ddv_training}")
+
+    if not (ddv_analyzer == None or ddv_analyzer == []):
+        query.append(f"analyzer == {ddv_analyzer}")
+
+    if query != []:
+        query = " and ".join(query)
+        notes = notes.query(query)
+        df = df.query(f'Title == {notes["titles"].values.tolist()}')
+    else:
+        notes = notes
+
+    elements = (
+        [
+            # Nodes elements
+            {
+                "data": {
+                    "id": f"{row[m]}",
+                    "label": f"{row[m]}",
+                    "size": 0,   
+                }
+            }
+            for m in metrics
+            for index, row in notes.iterrows()  if row[m] != "N/A"
+        ]
+        + [
+            {
+                "data": {
+                    "id": f"F1-{row['titles']}",
+                    "label": row["titles"],
+                    "size": df["F1_score_doc_avg"][index],
+                },
+                "classes": 'red'
+            }
+            for index, row in notes.iterrows()
+        ]
+        + [
+            {
+                "data": {
+                    "source": f"{row[m]}",
+                    "target": f"F1-{row['titles']}",
+                },
+                "classes": m
+            }
+            for m in metrics
+            for index, row in notes.iterrows() if row[m] != "N/A"
+        ]
+    )
+
+    return (
+        elements,
+        ddModels,
+        ddSources,
+        ddVocab,
+        ddTraining,
+        ddAnalyzer
+    )
 
 @app.callback(
     [
@@ -357,7 +489,7 @@ app.layout = html.Div(
         Output("dropdown_vocab", "options"),
         Output("dropdown_training", "options"),
         Output("dropdown_analyzer", "options"),
-        Output("graphError", "children"),
+        Output("graphError", "children")
     ],
     [
         Input("update-line", "n_intervals"),
@@ -481,4 +613,4 @@ def updateLine(
 server = app.server
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)
