@@ -1,24 +1,31 @@
 import dash
 from dash.dependencies import Output, Input, State
-from dash import dcc, html
+from dash import dcc, html, dash_table
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
 import dash_cytoscape as cyto
-
 from glob import glob
 import json
+import csv
 
 from os.path import getmtime
 from os.path import basename
 
 # production
-#inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/*.json"
-#notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
+inputFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/*.json"
+notesFile = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/nn-bv-stw-ensemble-en/MachineLearning.md"
+eprintFolder = "/mnt/volume_annif_projects/data-sets/bldg-regs/docs/validate/eprint/"
+eprintJSON = eprintFolder + "export_public_JSON.json"
+eprintMetrics = eprintFolder + "*.tsv"
 
 # testing
-inputFolder = "data-sets/*.json"
-notesFile = "data-sets/MachineLearning.md"
+#inputFolder = "data-sets/*.json"
+#notesFile = "data-sets/MachineLearning.md"
+#eprintJSON = 'data-sets/eprint/export_public_JSON.json'
+#eprintFolder = 'data-sets/'
+#eprintMetrics = "data-sets/*.tsv"
+
 
 seconds = 5  # change to 60 for a minute
 
@@ -88,18 +95,77 @@ styles = {
     },
 }
 
+def parse_abstract():
+
+    template = []
+    with open(eprintJSON, "r") as f:
+        data = json.load(f)
+        for row in data:
+            template.append(row)
+    df_eprint = pd.DataFrame(template)
+    df_eprint = df_eprint.drop(['corp_creators', 'subjects', "creators", "contributors", "related_url", "documents", "files", "projects", "editors"], axis=1)
+
+    for index, row in df_eprint.iterrows():
+        text = str(df_eprint.loc[index, 'abstract']) #string
+        if text:
+            text_file = open(eprintFolder + "public-eprint-" + str(df_eprint.loc[index, 'eprintid']) + "-abstract.txt", "w")
+            text_file.write(text)
+            text_file.close()
+
+    return df_eprint
+
+def conv(s):
+    try:
+        s=float(s)
+    except ValueError:
+        pass    
+    return s
+
+def parse_metrics():
+    jsonData = getjson(eprintMetrics)
+
+    # read json files
+    template = []
+    for file in jsonData:
+        with open(file, "r") as f:
+            data = csv.reader(f, delimiter="\t", quotechar='"')
+            for row in data:
+                row = [conv(s) for s in row]
+                k = {'uri': row[0], 'keyword': row[1] if len(row) >= 2 else 'N/A', 'notation': row[2] if ((len(row) >= 3) & (type(row[2]) != float)) else 'N/A', 'score': row[2] if (type(row[2]) == float) else (row[3] if len(row) >= 3 else 'N/A')}
+                template.append(k)
+
+    return pd.DataFrame(template, columns=['uri', 'keyword', 'notation', 'score'])
+
+def updateEPrintAbstracts():
+  df_abstract = parse_abstract()
+  tbl = dash_table.DataTable(
+    data=df_abstract.to_dict('records'),
+    page_size=20, 
+    style_table={'height': '300px', 'overflowY': 'auto'},
+    style_cell={'textAlign': 'left'}
+  )
+  return tbl
+  
+def updateEPrintMetrics():
+  df_metrics = parse_metrics()
+  tbl = dash_table.DataTable(
+    data=df_metrics.to_dict('records'),
+    page_size=20, 
+    style_table={'height': '300px', 'overflowY': 'auto'}
+  )
+  return tbl
 
 def cleanTitles():
     # remove unnececary data from path
-    jsonData = getjson()
+    jsonData = getjson(inputFolder)
     jsonData = [basename(x) for x in jsonData]
     jsonData = [x[0:-5] for x in jsonData]
-
     return jsonData
 
 
-def getjson():
+def getjson(inputFolder):
     # get json files and sort by creation date
+    jsonData = []
     jsonData = glob(inputFolder)
     jsonData.sort(key=getmtime)
     return jsonData
@@ -108,8 +174,6 @@ def getjson():
 def parsejson():
     # get ml data from jsonfiles
 
-    count = 1  # count is used to configure the number of ticks on the xaxis
-
     template = {
         "Index": [],
         "Precision_doc_avg": [],
@@ -117,18 +181,15 @@ def parsejson():
         "F1_score_doc_avg": [],
     }
 
-    jsonData = getjson()
+    jsonData = getjson(inputFolder)
 
     # read json files
-    for file in jsonData:
+    for index, file in enumerate(jsonData):
         with open(file, "r") as f:
             data = json.load(f)
-            data["Index"] = count
-
+            data["Index"] = index
             for k in template.keys():
                 template[k].append(data[k])
-
-        count += 1
 
     template["Title"] = cleanTitles()
     df = pd.DataFrame(template)
@@ -368,7 +429,10 @@ app.layout = html.Div(
                         )
                     ],
                 ),
-                dcc.Tab(label="Network Graph Eprints", children=[]),
+                dcc.Tab(label="Network Graph Eprints", children=[
+                  updateEPrintAbstracts(),
+                  updateEPrintMetrics() 
+                ]),
             ]
         )
     ]
@@ -433,9 +497,6 @@ def updateNetwork(
         df = df.query(f'Title == {notes["titles"].values.tolist()}')
     else:
         notes = notes
-
-    for index, row in notes.iterrows():
-      print(df.loc[df["Title"] == row['titles']]['F1_score_doc_avg'])
 
     elements = (
         [
@@ -611,8 +672,7 @@ def updateLine(
         errorMSG,
     )
 
-
 server = app.server
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port= 8051)
+    app.run_server(host= '0.0.0.0', debug=False)
