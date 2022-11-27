@@ -108,7 +108,7 @@ def parse_abstract():
     for index, row in df_eprint.iterrows():
         text = str(df_eprint.loc[index, 'abstract']) #string
         if text:
-            text_file = open(eprintFolder + "public-eprint-" + str(df_eprint.loc[index, 'eprintid']) + "-abstract.txt", "w")
+            text_file = open(eprintFolder + "public-eprint-" + str(df_eprint.loc[index, 'eprintid']) + "-abstract.txt", "w", encoding='utf-8')
             text_file.write(text)
             text_file.close()
 
